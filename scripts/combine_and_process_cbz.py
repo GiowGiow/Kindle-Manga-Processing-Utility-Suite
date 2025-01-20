@@ -31,9 +31,7 @@ from src.state_manager import (
     update_conversion_status,
     update_status,
 )
-from ascii_magic import AsciiArt
 from rich.console import Console
-from ascii_magic import AsciiArt
 from rich.table import Table
 from rich.text import Text
 from textual_image.renderable import Image
