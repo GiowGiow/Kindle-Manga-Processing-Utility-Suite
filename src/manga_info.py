@@ -110,13 +110,6 @@ def fetch_manga_info_jikan(manga_name):
         manga_result.get("images", {}).get("jpg", {}).get("large_image_url", None)
     )
 
-    logging.info(f"Author(s): {author_str}")
-    logging.info(f"Title: {manga_title}")
-    logging.info(f"Score: {score}")
-    logging.info(f"Genres: {genres_str}")
-    logging.info(f"Synopsis: {synopsis}")
-    logging.info(f"Cover Image URL: {cover_image_url}")
-
     return {
         "title": manga_title,
         "author": author_str,

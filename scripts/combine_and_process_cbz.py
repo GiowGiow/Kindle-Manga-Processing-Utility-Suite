@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-import os
 from pathlib import Path
 
 # Determine the project root based on the script's location
@@ -10,19 +9,7 @@ project_root = Path(__file__).resolve().parent.parent
 # Add the project root to sys.path
 sys.path.append(str(project_root))
 
-
-import argparse
-import shutil
-import zipfile
-import tempfile
-from pathlib import Path
 import logging
-from tqdm import tqdm
-import subprocess
-import sys
-import json
-import requests
-
 from src.constants import CHAPTERS_PER_PART, STATUS_FILE
 from src.cbz_convertor import convert_cbz_to_mobi
 from src.extractor import extract_and_save_cover_image
@@ -44,6 +31,62 @@ from src.state_manager import (
     update_conversion_status,
     update_status,
 )
+from ascii_magic import AsciiArt
+from rich.console import Console
+from ascii_magic import AsciiArt
+from rich.table import Table
+from rich.text import Text
+from textual_image.renderable import Image
+
+console = Console()
+
+
+def create_ascii_art(image_path: Path):
+    try:
+        output = AsciiArt.from_image(image_path)
+        ascii_art_str = output.to_ascii(columns=80)
+        return ascii_art_str
+    except Exception as e:
+        logging.error(f"Failed to display ASCII art: {e}")
+
+
+def display_manga_info(metadata: dict, ascii_art_path):
+    """
+    metadata= {
+        "title": manga_title,
+        "author": author_str,
+        "summary": synopsis,
+        "genres": genres_str,
+        "score": score,
+        "cover_image_url": cover_image_url,
+    }
+    """
+    table = Table(
+        title="📚 Manga Information",
+        show_header=True,
+        header_style="bold magenta",
+    )
+
+    # Define table columns
+    table.add_column("Field", style="cyan", no_wrap=True)
+    table.add_column("Details", style="white")
+
+    # Add rows to the table
+    table.add_row("Title", metadata.get("title", "N/A"))
+    table.add_row("Author(s)", metadata.get("author", "N/A"))
+    table.add_row("Score", str(metadata.get("score", "N/A")))
+    table.add_row(
+        "Genres",
+        metadata.get("genres") if metadata.get("genres") else "N/A",
+    )
+    table.add_row("Synopsis", Text(metadata.get("summary", "N/A"), style="dim"))
+    table.add_row("Cover Image", metadata.get("cover_image_url", "N/A"))
+    table.add_row("ASCII Art", Image(ascii_art_path))
+
+    # Display the table and ASCII art side by side
+    console.print(table)
+    # Add additional fields as needed
+    # Example: table.add_row("Publication Date", metadata.get("publication_date", "N/A"))
 
 
 def process_manga_folder(dir: Path, dry_run: bool) -> None:
@@ -60,7 +103,7 @@ def process_manga_folder(dir: Path, dry_run: bool) -> None:
         logging.error("Unable to determine manga name from the CBZ files.")
         return
     logging.info(f"Possible manga name: '{manga_name}'")
-
+    logging.info(f"Fetching metadata on Jikan for '{manga_name}'...")
     metadata = fetch_manga_info_jikan(manga_name)
     if not metadata:
         logging.error("Failed to retrieve manga information from Jikan API.")
@@ -78,6 +121,7 @@ def process_manga_folder(dir: Path, dry_run: bool) -> None:
         else None
     )
 
+    display_manga_info(metadata, cover_image_path)
     cbz_packs = group_cbz_into_packs(cbz_files, chapters_per_part=CHAPTERS_PER_PART)
 
     total_num_of_packs = len(cbz_packs)
