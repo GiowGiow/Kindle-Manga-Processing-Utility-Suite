@@ -26,12 +26,9 @@ def search_manga_jikan(manga_name):
             manga_name,
             page=1,
             parameters={
-                "limit": 10,
-                "sfw": str(not NSFW).lower(),
-                "order_by": "popularity",
+                "limit": 5,
             },
         )
-
     except Exception as e:
         logging.error(f"Error fetching data from Jikan API: {e}")
         return None
@@ -61,7 +58,6 @@ def search_manga_jikan(manga_name):
             titles.append((manga.get("title_english"), manga))
 
     title_names = [title for title, _ in titles]
-
     # Perform fuzzy matching
     best_match, score = process.extractOne(manga_name, title_names)
     if score > FUZZY_MATCH_THRESHOLD:
@@ -80,7 +76,7 @@ def fetch_manga_info_jikan(manga_name):
     Returns a dictionary containing relevant metadata.
     """
     # Perform fuzzy search with Jikan
-    logging.info(f"Trying to match '{manga_name}'...")
+    logging.debug(f"Trying to match '{manga_name}'...")
     search_result = search_manga_jikan(manga_name)
     if not search_result:
         return None

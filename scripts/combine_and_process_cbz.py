@@ -88,7 +88,6 @@ def display_manga_info(metadata: dict, ascii_art_path):
 
 
 def process_manga_folder(dir: Path, dry_run: bool) -> None:
-    logging.info("-" * 40)
     logging.info(f"Scanning directory: {dir}")
 
     cbz_files = get_sorted_cbz_files(dir)
@@ -100,7 +99,7 @@ def process_manga_folder(dir: Path, dry_run: bool) -> None:
     if not manga_name:
         logging.error("Unable to determine manga name from the CBZ files.")
         return
-    logging.info(f"Possible manga name: '{manga_name}'")
+    logging.debug(f"Possible manga name: '{manga_name}'")
     logging.info(f"Fetching metadata on Jikan for '{manga_name}'...")
     metadata = fetch_manga_info_jikan(manga_name)
     if not metadata:
@@ -123,12 +122,18 @@ def process_manga_folder(dir: Path, dry_run: bool) -> None:
     cbz_packs = group_cbz_into_packs(cbz_files, chapters_per_part=CHAPTERS_PER_PART)
 
     total_num_of_packs = len(cbz_packs)
-    logging.info(f"Total parts to process: {total_num_of_packs}")
 
     converted_output_folder = create_output_folder(dir)
     status, status_file_path = load_status(dir, STATUS_FILE)
-    logging.info(f"Loaded status from '{status_file_path}'.")
-    logging.info(f"Status: {status}")
+    processed_status = (
+        "None" if not status["processed_cbz_parts"] else status["processed_cbz_parts"]
+    )
+    converted_status = (
+        "None" if not status["converted_mobi_parts"] else status["converted_mobi_parts"]
+    )
+    logging.info(f"Processed: {processed_status}")
+    logging.info(f"Converted: {converted_status}")
+
     author_str = metadata["author"]
     process_packs(
         dry_run,

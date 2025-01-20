@@ -60,7 +60,7 @@ def combine_to_cbz(
         logging.info(f"Chapter range: {chapter_range}")
         temp_dir_path = Path(tmp_dir)
 
-        logging.info(
+        logging.debug(
             f"Collecting chapter images for chapters {chapter_range} in temporary directory: {temp_dir_path}"
         )
 

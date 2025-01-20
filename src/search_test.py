@@ -38,7 +38,7 @@ def fuzzy_search_manga(query):
 
 
 # Example Usage
-folder_name = "Oshi No Ko - Copy"
+folder_name = "Monster"
 result = fuzzy_search_manga(folder_name)
 
 if result:
